@@ -11,15 +11,16 @@ use IPC::Concurrency::DBI::Application::Instance;
 
 =head1 NAME
 
-IPC::Concurrency::DBI::Application;
+IPC::Concurrency::DBI::Application - Application identifier that represents the resource that will be limited.
+
 
 =head1 VERSION
 
-Version 1.0.0
+Version 1.0.1
 
 =cut
 
-our $VERSION = '1.0.0';
+our $VERSION = '1.0.1';
 
 
 =head1 SYNOPSIS
@@ -103,11 +104,11 @@ sub new
 	my $application_id = delete( $args{'application_id'} );
 	
 	# Check parameters.
-	die "Argument 'database_handle' is required to create a new IPC::Concurrency::DBI::Application object"
+	croak "Argument 'database_handle' is required to create a new IPC::Concurrency::DBI::Application object"
 		unless defined( $database_handle );
-	die "Argument 'database_handle' is not a DBI object"
+	croak "Argument 'database_handle' is not a DBI object"
 		unless $database_handle->isa( 'DBI::db' );
-	die 'Cannot pass both a name and an application ID, please use only one'
+	croak 'Cannot pass both a name and an application ID, please use only one'
 		if defined( $name ) && defined( $application_id );
 	
 	# Determine what key to use to retrieve the row.
@@ -124,7 +125,7 @@ sub new
 	}
 	else
 	{
-		die 'You need to specify either a name or an ID to retrieve an application';
+		croak 'You need to specify either a name or an ID to retrieve an application';
 	}
 	
 	# Retrieve the row from the database.
@@ -137,9 +138,9 @@ sub new
 		{},
 		$value,
 	);
-	die 'Cannot execute SQL: ' . $database_handle->errstr()
+	croak 'Cannot execute SQL: ' . $database_handle->errstr()
 		if defined( $database_handle->errstr() );
-	die 'Application not found'
+	croak 'Application not found'
 		unless defined( $data );
 	
 	# Create the object.
@@ -188,8 +189,7 @@ sub start_instance
 	
 	# If no row was affected, we've reached the maximum number of instances or
 	# the application ID has vanished. Either way, we can't start the instance.
-	return undef
-		unless $rows_affected == 1;
+	return unless $rows_affected == 1;
 	
 	return IPC::Concurrency::DBI::Application::Instance->new(
 		application => $self,
@@ -222,9 +222,9 @@ sub get_instances_count
 		{},
 		$self->get_id(),
 	);
-	die 'Cannot execute SQL: ' . $database_handle->errstr()
+	croak 'Cannot execute SQL: ' . $database_handle->errstr()
 		if defined( $database_handle->errstr() );
-	die 'Application not found'
+	croak 'Application not found'
 		unless defined( $data );
 	
 	return $data->{'current_instances'};
@@ -262,8 +262,8 @@ sub set_maximum_instances
 	my ( $self, $maximum_instances ) = @_;
 	
 	# Check parameters.
-	die 'The maximum number of instances needs to be a strictly positive integer'
-		unless defined( $maximum_instances ) && ( $maximum_instances =~ m/^\d+$/ ) && ( $maximum_instances > 0 );
+	croak 'The maximum number of instances needs to be a strictly positive integer'
+		if !defined( $maximum_instances ) || ( $maximum_instances !~ m/^\d+$/ ) || ( $maximum_instances <= 0 );
 	
 	# Update the application information.
 	my $database_handle = $self->_get_database_handle();
@@ -379,8 +379,9 @@ L<http://search.cpan.org/dist/IPC-Concurrency-DBI/>
 
 =head1 ACKNOWLEDGEMENTS
 
-Thanks to Geeknet, Inc. L<http://www.geek.net> for funding the initial
-development of this code!
+Thanks to ThinkGeek (L<http://www.thinkgeek.com/>) and its corporate overlords
+at Geeknet (L<http://www.geek.net/>), for footing the bill while I eat pizza
+and write code for them!
 
 Thanks to Jacob Rose C<< <jacob at thinkgeek.com> >> for suggesting the idea of
 this module and brainstorming with me about the features it should offer.

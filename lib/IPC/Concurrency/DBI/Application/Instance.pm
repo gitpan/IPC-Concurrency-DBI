@@ -9,15 +9,16 @@ use Carp;
 
 =head1 NAME
 
-IPC::Concurrency::DBI::Application::Instance;
+IPC::Concurrency::DBI::Application::Instance - Application instance that represents consumption of the limited resource.
+
 
 =head1 VERSION
 
-Version 1.0.0
+Version 1.0.1
 
 =cut
 
-our $VERSION = '1.0.0';
+our $VERSION = '1.0.1';
 
 
 =head1 SYNOPSIS
@@ -65,9 +66,9 @@ sub new
 	my $application = delete( $args{'application'} );
 	
 	# Check parameters.
-	die "Argument 'application' is required to create a new IPC::Concurrency::DBI::Application::Instance object"
+	croak "Argument 'application' is required to create a new IPC::Concurrency::DBI::Application::Instance object"
 		unless defined( $application );
-	die "Argument '$application' is not an IPC::Concurrency::DBI::Application"
+	croak "Argument '$application' is not an IPC::Concurrency::DBI::Application"
 		unless $application->isa( 'IPC::Concurrency::DBI::Application' );
 	
 	# Create the object.
@@ -97,7 +98,7 @@ sub finish
 	my $database_handle = $application->_get_database_handle();
 	
 	# If the object has already been destroyed, we have a problem.
-	die 'The instance has already been marked as finished'
+	croak 'The instance has already been marked as finished'
 		if $self->{'finished'};
 	
 	# Decrement the count of running instances, provided that it's > 0.
@@ -136,7 +137,7 @@ sub _get_database_handle
 	my ( $self ) = @_;
 	
 	my $application = $self->get_application();
-	die 'The Instance object does not reference an application'
+	croak 'The Instance object does not reference an application'
 		unless defined( $application );
 	
 	return $application->_get_database_handle();
@@ -225,8 +226,9 @@ L<http://search.cpan.org/dist/IPC-Concurrency-DBI/>
 
 =head1 ACKNOWLEDGEMENTS
 
-Thanks to Geeknet, Inc. L<http://www.geek.net> for funding the initial
-development of this code!
+Thanks to ThinkGeek (L<http://www.thinkgeek.com/>) and its corporate overlords
+at Geeknet (L<http://www.geek.net/>), for footing the bill while I eat pizza
+and write code for them!
 
 Thanks to Jacob Rose C<< <jacob at thinkgeek.com> >> for suggesting the idea of
 this module and brainstorming with me about the features it should offer.

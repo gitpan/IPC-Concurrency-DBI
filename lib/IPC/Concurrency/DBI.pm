@@ -11,17 +11,16 @@ use IPC::Concurrency::DBI::Application;
 
 =head1 NAME
 
-IPC::Concurrency::DBI - Controls how many instances of an application run in
-parallel, using DBI as the IPC method.
+IPC::Concurrency::DBI - Control how many instances of an application run in parallel, using DBI as the IPC method.
 
 
 =head1 VERSION
 
-Version 1.0.0
+Version 1.0.1
 
 =cut
 
-our $VERSION = '1.0.0';
+our $VERSION = '1.0.1';
 
 
 =head1 SYNOPSIS
@@ -108,9 +107,9 @@ sub new
 	my $verbose = delete( $args{'verbose'} );
 	
 	# Check parameters.
-	die "Argument 'database_handle' is required to create a new IPC::Concurrency::DBI object"
+	croak "Argument 'database_handle' is required to create a new IPC::Concurrency::DBI object"
 		unless defined( $database_handle );
-	die "Argument 'database_handle' is not a DBI object"
+	croak "Argument 'database_handle' is not a DBI object"
 		unless $database_handle->isa( 'DBI::db' );
 	
 	# Create the object.
@@ -179,14 +178,14 @@ sub register_application
 	my $maximum_instances = delete( $args{'maximum_instances'} );
 	
 	# Check parameters.
-	die 'The name of the application must be defined'
-		unless defined( $name ) && ( $name ne '' );
-	die 'The application name is longer than 255 characters'
+	croak 'The name of the application must be defined'
+		if !defined( $name ) || ( $name eq '' );
+	croak 'The application name is longer than 255 characters'
 		if length( $name ) > 255;
-	die 'The maximum number of instances must be defined'
-		unless defined( $maximum_instances ) && ( $maximum_instances ne '' );
-	die 'The maximum number of instances must be a strictly positive integer'
-		unless ( $maximum_instances =~ m/^\d+$/ ) && ( $maximum_instances > 0 );
+	croak 'The maximum number of instances must be defined'
+		if !defined( $maximum_instances ) || ( $maximum_instances eq '' );
+	croak 'The maximum number of instances must be a strictly positive integer'
+		if ( $maximum_instances !~ m/^\d+$/ ) || ( $maximum_instances <= 0 );
 	
 	# Insert the new application.
 	my $database_handle = $self->_get_database_handle();
@@ -274,7 +273,7 @@ sub create_tables
 		unless defined( $database_type );
 	
 	# Check parameters.
-	die 'This database type is not supported yet. Please email the maintainer of the module for help.'
+	croak 'This database type is not supported yet. Please email the maintainer of the module for help.'
 		unless $database_type =~ m/^(SQLite|MySQL)$/;
 	
 	# Create the table that will hold the list of applications as well as
@@ -381,8 +380,9 @@ L<http://search.cpan.org/dist/IPC-Concurrency-DBI/>
 
 =head1 ACKNOWLEDGEMENTS
 
-Thanks to Geeknet, Inc. L<http://www.geek.net> for funding the initial
-development of this code!
+Thanks to ThinkGeek (L<http://www.thinkgeek.com/>) and its corporate overlords
+at Geeknet (L<http://www.geek.net/>), for footing the bill while I eat pizza
+and write code for them!
 
 Thanks to Jacob Rose C<< <jacob at thinkgeek.com> >> for suggesting the idea of
 this module and brainstorming with me about the features it should offer.
