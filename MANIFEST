@@ -8,6 +8,7 @@ lib/IPC/Concurrency/DBI/Application/Instance.pm
 Makefile.PL
 MANIFEST			This list of files
 MANIFEST.SKIP
+META.json
 META.yml
 README
 t/00-load.t
@@ -20,5 +21,6 @@ t/35-get_instances_count.t
 t/99-cleanup.t
 t/manifest.t
 t/module_versions.t
+t/perlcritic.t
 t/pod.t
 t/pod-coverage.t
