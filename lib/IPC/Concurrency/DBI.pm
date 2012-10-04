@@ -16,11 +16,11 @@ IPC::Concurrency::DBI - Control how many instances of an application run in para
 
 =head1 VERSION
 
-Version 1.0.2
+Version 1.0.3
 
 =cut
 
-our $VERSION = '1.0.2';
+our $VERSION = '1.0.3';
 
 
 =head1 SYNOPSIS
@@ -392,10 +392,16 @@ this module and brainstorming with me about the features it should offer.
 
 Copyright 2011-2012 Guillaume Aubert.
 
-This program is free software; you can redistribute it and/or modify it
-under the terms of the Artistic License.
+This program is free software: you can redistribute it and/or modify it under
+the terms of the GNU General Public License version 3 as published by the Free
+Software Foundation.
 
-See http://dev.perl.org/licenses/ for more information.
+This program is distributed in the hope that it will be useful, but WITHOUT ANY
+WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS FOR A
+PARTICULAR PURPOSE. See the GNU General Public License for more details.
+
+You should have received a copy of the GNU General Public License along with
+this program. If not, see http://www.gnu.org/licenses/
 
 =cut
 

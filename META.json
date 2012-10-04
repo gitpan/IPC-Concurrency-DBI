@@ -6,7 +6,7 @@
    "dynamic_config" : 1,
    "generated_by" : "Module::Build version 0.4003, CPAN::Meta::Converter version 2.120921",
    "license" : [
-      "artistic_1"
+      "open_source"
    ],
    "meta-spec" : {
       "url" : "http://search.cpan.org/perldoc?CPAN::Meta::Spec",
@@ -37,15 +37,15 @@
    "provides" : {
       "IPC::Concurrency::DBI" : {
          "file" : "lib/IPC/Concurrency/DBI.pm",
-         "version" : "v1.0.2"
+         "version" : "v1.0.3"
       },
       "IPC::Concurrency::DBI::Application" : {
          "file" : "lib/IPC/Concurrency/DBI/Application.pm",
-         "version" : "v1.0.2"
+         "version" : "v1.0.3"
       },
       "IPC::Concurrency::DBI::Application::Instance" : {
          "file" : "lib/IPC/Concurrency/DBI/Application/Instance.pm",
-         "version" : "v1.0.2"
+         "version" : "v1.0.3"
       }
    },
    "release_status" : "stable",
@@ -55,11 +55,11 @@
       },
       "homepage" : "https://metacpan.org/release/IPC-Concurrency-DBI",
       "license" : [
-         "http://www.perlfoundation.org/artistic_license_1_0"
+         "http://www.gnu.org/licenses/gpl-3.0.txt"
       ],
       "repository" : {
          "url" : "https://github.com/guillaumeaubert/IPC-Concurrency-DBI"
       }
    },
-   "version" : "v1.0.2"
+   "version" : "v1.0.3"
 }
