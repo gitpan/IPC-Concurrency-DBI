@@ -3,8 +3,11 @@
 use strict;
 use warnings;
 
+use Test::Exception;
 use Test::More tests => 8;
-use DBI;
+
+use lib 't/';
+use LocalTest;
 
 use IPC::Concurrency::DBI;
 
@@ -55,17 +58,7 @@ my $tests =
 	},
 ];
 
-ok(
-	my $dbh = DBI->connect(
-		'dbi:SQLite:dbname=test_database',
-		'',
-		'',
-		{
-			RaiseError => 1,
-		}
-	),
-	'Create connection to a SQLite database',
-);
+my $dbh = LocalTest::ok_database_handle();
 
 my $concurrency_manager = IPC::Concurrency::DBI->new(
 	'database_handle' => $dbh,
@@ -74,7 +67,7 @@ my $concurrency_manager = IPC::Concurrency::DBI->new(
 
 foreach my $test ( @$tests )
 {
-	eval
+	my $test_sub = sub
 	{
 		# If we expect a failure, don't warn.
 		# If we expect a success, output the warnings normally.
@@ -90,9 +83,18 @@ foreach my $test ( @$tests )
 		);
 	};
 	
-	is(
-		$@ ? 'failure' : 'success',
-		$test->{'expected_result'},
-		$test->{'test_name'},
-	) || diag( $@ ? "Error: $@." : "No error reported." );
+	if ( $test->{'expected_result'} eq 'success' )
+	{
+		lives_ok(
+			sub { $test_sub->() },
+			$test->{'test_name'},
+		);
+	}
+	else
+	{
+		dies_ok(
+			sub { $test_sub->() },
+			$test->{'test_name'},
+		);
+	}
 }

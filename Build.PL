@@ -10,15 +10,16 @@ my $builder = Module::Build->new(
 	dist_version_from   => 'lib/IPC/Concurrency/DBI.pm',
 	build_requires      =>
 	{
-		'Carp'          => 0,
-		'Data::Dumper'  => 0,
-		'DBD::SQLite'   => 0,
-		'DBI'           => 0,
-		'Test::More'    => 0,
+		'DBD::SQLite'     => 0,
+		'DBI'             => 0,
+		'Test::Exception' => 0,
+		'Test::More'      => 0,
 	},
 	requires            =>
 	{
-		'perl'          => 5.006,
+		'Carp'            => 0,
+		'Data::Dumper'    => 0,
+		'perl'            => 5.006,
 	},
 	add_to_cleanup      =>
 	[
@@ -36,6 +37,13 @@ my $builder = Module::Build->new(
 			repository  => 'https://github.com/guillaumeaubert/IPC-Concurrency-DBI',
 			homepage    => 'https://metacpan.org/release/IPC-Concurrency-DBI',
 			bugtracker  => 'http://rt.cpan.org/NoAuth/ReportBug.html?Queue=ipc-concurrency-dbi',
+		},
+		no_index                =>
+		{
+			file        =>
+			[
+				't/LocalTest.pm',
+			],
 		},
 	},
 );

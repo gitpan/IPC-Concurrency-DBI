@@ -16,11 +16,11 @@ IPC::Concurrency::DBI - Control how many instances of an application run in para
 
 =head1 VERSION
 
-Version 1.0.3
+Version 1.1.0
 
 =cut
 
-our $VERSION = '1.0.3';
+our $VERSION = '1.1.0';
 
 
 =head1 SYNOPSIS
@@ -35,9 +35,6 @@ running in parallel to prevent exhausting all the available resources.
 It uses DBI as a storage layer for information about instances and applications,
 which is particularly useful in contexts where Sarbanes-Oxley regulations allow
 you database access but not file write rights in production environments.
-
-Note that currently only MySQL and SQLite are fully tested. Patches or testing
-environments for other DBD::* modules are welcome.
 
 	# Configure the concurrency object.
 	use IPC::Concurrency::DBI;
@@ -81,6 +78,24 @@ environments for other DBD::* modules are welcome.
 	# Now that the application is about to exit, flag the instance as completed.
 	# (note: this is implicit when $instance is destroyed).
 	$instance->finish();
+
+
+=head1 SUPPORTED DATABASES
+
+This distribution currently supports:
+
+=over 4
+
+=item * SQLite
+
+=item * MySQL
+
+=item * PostgreSQL
+
+=back
+
+Please contact me if you need support for another database type, I'm always
+glad to add extensions if you can help me with testing.
 
 
 =head1 METHODS
@@ -248,14 +263,10 @@ the applications and instances.
 
 	$concurrency_manager->create_tables(
 		drop_if_exist => $boolean,      #default 0
-		database_type => $database_type #default SQLite
 	);
 
 By default, it won't drop any table but you can force that by setting
 'drop_if_exist' to 1.
-
-'database_type' currently supports 'SQLite' and 'MySQL'. Patches or requests
-for other DBD::* modules are welcome!
 
 =cut
 
@@ -263,26 +274,22 @@ sub create_tables
 {
 	my ( $self, %args ) = @_;
 	my $drop_if_exist = delete( $args{'drop_if_exist'} );
-	my $database_type = delete( $args{'database_type'} );
 	my $database_handle = $self->_get_database_handle();
 	
 	# Defaults.
 	$drop_if_exist = 0
-		unless defined( $drop_if_exist ) && $drop_if_exist;
-	$database_type = 'MySQL'
-		unless defined( $database_type );
+		if !defined( $drop_if_exist ) || !$drop_if_exist;
 	
-	# Check parameters.
-	croak 'This database type is not supported yet. Please email the maintainer of the module for help.'
-		unless $database_type =~ m/^(SQLite|MySQL)$/;
+	# Check the database type.
+	my $database_type = $self->get_database_type();
+	croak "This database type ($database_type) is not supported yet, please email the maintainer of the module for help"
+		if $database_type !~ m/^(?:SQLite|mysql|Pg)$/x;
 	
-	# Create the table that will hold the list of applications as well as
-	# a summary of the information about instances.
-	$database_handle->do( q|DROP TABLE IF EXISTS ipc_concurrency_applications| )
-		if $drop_if_exist;
-	$database_handle->do(
-		$database_type eq 'SQLite'
-		? q|
+	# Table definitions.
+	my $tables_sql =
+	{
+		SQLite =>
+		q|
 			CREATE TABLE ipc_concurrency_applications
 			(
 				ipc_concurrency_application_id INTEGER PRIMARY KEY AUTOINCREMENT,
@@ -293,8 +300,9 @@ sub create_tables
 				modified bigint(20) NOT NULL default '0',
 				UNIQUE (name)
 			)
-		|
-		: q|
+		|,
+		mysql  =>
+		q|
 			CREATE TABLE ipc_concurrency_applications
 			(
 				ipc_concurrency_application_id BIGINT(20) UNSIGNED NOT NULL auto_increment,
@@ -304,11 +312,35 @@ sub create_tables
 				created bigint(20) UNSIGNED NOT NULL default '0',
 				modified bigint(20) UNSIGNED NOT NULL default '0',
 				PRIMARY KEY (ipc_concurrency_application_id),
-				UNIQUE KEY idx_name (name)
+				UNIQUE KEY idx_ipc_concurrency_applications_name (name)
 			)
 			ENGINE=InnoDB
-		|
-	);
+		|,
+		Pg     =>
+		q|
+			CREATE TABLE ipc_concurrency_applications
+			(
+				ipc_concurrency_application_id BIGSERIAL,
+				name VARCHAR(255) NOT NULL,
+				current_instances INT NOT NULL default '0',
+				maximum_instances INT NOT NULL default '0',
+				created BIGINT NOT NULL default '0',
+				modified BIGINT NOT NULL default '0',
+				PRIMARY KEY (ipc_concurrency_application_id),
+				CONSTRAINT idx_ipc_concurrency_applications_name UNIQUE (name)
+			)
+		|,
+	};
+	croak "No table definition found for database type '$database_type'"
+		if !defined( $tables_sql->{ $database_type } );
+	
+	# Create the table that will hold the list of applications as well as
+	# a summary of the information about instances.
+	$database_handle->do( q|DROP TABLE IF EXISTS ipc_concurrency_applications| )
+		if $drop_if_exist;
+	$database_handle->do(
+		$tables_sql->{ $database_type }
+	) || croak 'Cannot execute SQL: ' . $database_handle->errstr();
 	
 	# TODO: create a separate table to hold information about what instances
 	# are currently running.
@@ -332,6 +364,25 @@ sub _get_database_handle
 	my ( $self ) = @_;
 	
 	return $self->{'database_handle'};
+}
+
+
+=head2 get_database_type()
+
+Return the database type corresponding to the database handle associated
+with the L<IPC::Concurrency::DBI> object.
+
+	my $database_type = $concurrency_manager->get_database_type();
+
+=cut
+
+sub get_database_type
+{
+	my ( $self ) = @_;
+	
+	my $database_handle = $self->_get_database_handle();
+	
+	return $database_handle->{'Driver'}->{'Name'} || '';
 }
 
 
