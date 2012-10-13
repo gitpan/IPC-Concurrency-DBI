@@ -4,6 +4,7 @@ use warnings;
 use strict;
 
 use Data::Dumper;
+use Data::Validate::Type;
 use Carp;
 
 use IPC::Concurrency::DBI::Application;
@@ -16,11 +17,11 @@ IPC::Concurrency::DBI - Control how many instances of an application run in para
 
 =head1 VERSION
 
-Version 1.1.0
+Version 1.1.1
 
 =cut
 
-our $VERSION = '1.1.0';
+our $VERSION = '1.1.1';
 
 
 =head1 SYNOPSIS
@@ -125,7 +126,7 @@ sub new
 	croak "Argument 'database_handle' is required to create a new IPC::Concurrency::DBI object"
 		unless defined( $database_handle );
 	croak "Argument 'database_handle' is not a DBI object"
-		unless $database_handle->isa( 'DBI::db' );
+		if !Data::Validate::Type::is_instance( $database_handle, class => 'DBI::db' );
 	
 	# Create the object.
 	my $self = bless(
@@ -136,35 +137,10 @@ sub new
 		$class,
 	);
 	
-	$self->verbose( $verbose )
+	$self->set_verbose( $verbose )
 		if defined( $verbose );
 	
 	return $self;
-}
-
-
-=head2 verbose()
-
-Control the verbosity of the warnings in the code.
-
-	$queue->verbose(1); # turn on verbose information
-	
-	$queue->verbose(0); # quiet now!
-	
-	warn 'Verbose' if $queue->verbose(); # getter-style
-	
-Allows turning on/off debugging information.
-
-=cut
-
-sub verbose
-{
-	my ( $self, $verbose ) = @_;
-	
-	$self->{'verbose'} = ( $verbose || 0 )
-		if defined( $verbose );
-	
-	return $self->{'verbose'};
 }
 
 
@@ -200,10 +176,10 @@ sub register_application
 	croak 'The maximum number of instances must be defined'
 		if !defined( $maximum_instances ) || ( $maximum_instances eq '' );
 	croak 'The maximum number of instances must be a strictly positive integer'
-		if ( $maximum_instances !~ m/^\d+$/ ) || ( $maximum_instances <= 0 );
+		if !Data::Validate::Type::is_number( $maximum_instances, strictly_positive => 1 );
 	
 	# Insert the new application.
-	my $database_handle = $self->_get_database_handle();
+	my $database_handle = $self->get_database_handle();
 	my $time = time();
 	my $rows_affected = $database_handle->do(
 		q|
@@ -216,6 +192,8 @@ sub register_application
 		$time,
 		$time,
 	);
+	croak 'Cannot execute SQL: ' . $database_handle->errstr()
+		if defined( $database_handle->errstr() );
 	
 	return defined( $rows_affected ) && $rows_affected == 1 ? 1 : 0;
 }
@@ -246,7 +224,7 @@ sub get_application
 	my ( $self, %args ) = @_;
 	my $name = delete( $args{'name'} );
 	my $application_id = delete( $args{'id'} );
-	my $database_handle = $self->_get_database_handle();
+	my $database_handle = $self->get_database_handle();
 	
 	return IPC::Concurrency::DBI::Application->new(
 		name            => $name,
@@ -274,7 +252,7 @@ sub create_tables
 {
 	my ( $self, %args ) = @_;
 	my $drop_if_exist = delete( $args{'drop_if_exist'} );
-	my $database_handle = $self->_get_database_handle();
+	my $database_handle = $self->get_database_handle();
 	
 	# Defaults.
 	$drop_if_exist = 0
@@ -336,8 +314,11 @@ sub create_tables
 	
 	# Create the table that will hold the list of applications as well as
 	# a summary of the information about instances.
-	$database_handle->do( q|DROP TABLE IF EXISTS ipc_concurrency_applications| )
-		if $drop_if_exist;
+	if ( $drop_if_exist )
+	{
+		$database_handle->do( q|DROP TABLE IF EXISTS ipc_concurrency_applications| )
+			|| croak 'Cannot execute SQL: ' . $database_handle->errstr();
+	}
 	$database_handle->do(
 		$tables_sql->{ $database_type }
 	) || croak 'Cannot execute SQL: ' . $database_handle->errstr();
@@ -349,17 +330,17 @@ sub create_tables
 }
 
 
-=head1 INTERNAL METHODS
+=head1 ACCESSORS
 
-=head2 _get_database_handle()
+=head2 get_database_handle()
 
-Returns the database handle used for this queue.
+Returns the database handle used for this object.
 
-	my $database_handle = $concurrency_manager->_get_database_handle();
+	my $database_handle = $concurrency_manager->get_database_handle();
 
 =cut
 
-sub _get_database_handle
+sub get_database_handle
 {
 	my ( $self ) = @_;
 	
@@ -380,9 +361,76 @@ sub get_database_type
 {
 	my ( $self ) = @_;
 	
-	my $database_handle = $self->_get_database_handle();
+	my $database_handle = $self->get_database_handle();
 	
 	return $database_handle->{'Driver'}->{'Name'} || '';
+}
+
+
+=head2 get_verbose()
+
+Return the verbosity level, which is used in the module to determine when and
+what type of debugging statements / information should be warned out.
+
+See C<set_verbose()> for the possible values this function can return.
+
+	warn 'Verbose' if $queue->get_verbose();
+	
+	warn 'Very verbose' if $queue->get_verbose() > 1;
+
+=cut
+
+sub get_verbose
+{
+	my ( $self ) = @_;
+	
+	return $self->{'verbose'};
+}
+
+
+=head2 set_verbose()
+
+Control the verbosity of the warnings in the code:
+
+=over 4
+
+=item * 0 will not display any warning;
+
+=item * 1 will only give one line warnings about the current operation;
+
+=item * 2 will also usually output the SQL queries performed.
+
+=back
+
+	$queue->set_verbose(1); # turn on verbose information
+	
+	$queue->set_verbose(2); # be extra verbose
+	
+	$queue->set_verbose(0); # quiet now!
+
+=cut
+
+sub set_verbose
+{
+	my ( $self, $verbose ) = @_;
+	
+	$self->{'verbose'} = ( $verbose || 0 );
+	
+	return;
+}
+
+
+=head1 DEPRECATED METHODS
+
+=head2 verbose()
+
+Please use C<get_verbose()> and C<set_verbose()> instead.
+
+=cut
+
+sub verbose
+{
+	croak 'verbose() has been deprecated, please use get_verbose() / set_verbose() instead.';
 }
 
 

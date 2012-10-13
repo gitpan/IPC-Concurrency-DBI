@@ -14,11 +14,11 @@ IPC::Concurrency::DBI::Application::Instance - Application instance that represe
 
 =head1 VERSION
 
-Version 1.1.0
+Version 1.1.1
 
 =cut
 
-our $VERSION = '1.1.0';
+our $VERSION = '1.1.1';
 
 
 =head1 SYNOPSIS
@@ -68,8 +68,8 @@ sub new
 	# Check parameters.
 	croak "Argument 'application' is required to create a new IPC::Concurrency::DBI::Application::Instance object"
 		unless defined( $application );
-	croak "Argument '$application' is not an IPC::Concurrency::DBI::Application"
-		unless $application->isa( 'IPC::Concurrency::DBI::Application' );
+	croak "Argument 'application' is not an IPC::Concurrency::DBI::Application"
+		if !Data::Validate::Type::is_instance( $application, class => 'IPC::Concurrency::DBI::Application' );
 	
 	# Create the object.
 	my $self = bless(
@@ -94,8 +94,8 @@ a new instance.
 sub finish
 {
 	my ( $self ) = @_;
-	my $application = $self->_get_application();
-	my $database_handle = $application->_get_database_handle();
+	my $application = $self->get_application();
+	my $database_handle = $application->get_database_handle();
 	
 	# If the object has already been destroyed, we have a problem.
 	croak 'The instance has already been marked as finished'
@@ -115,6 +115,8 @@ sub finish
 		time(),
 		$application->get_id(),
 	);
+	croak 'Cannot execute SQL: ' . $database_handle->errstr()
+		if defined( $database_handle->errstr() );
 	
 	$self->{'finished'} = 1;
 	
@@ -124,35 +126,15 @@ sub finish
 
 =head1 INTERNAL METHODS
 
-=head2 _get_database_handle()
-
-Returns the database handle used for this queue.
-
-	my $database_handle = $concurrency_manager->_get_database_handle();
-
-=cut
-
-sub _get_database_handle
-{
-	my ( $self ) = @_;
-	
-	my $application = $self->get_application();
-	croak 'The Instance object does not reference an application'
-		unless defined( $application );
-	
-	return $application->_get_database_handle();
-}
-
-
-=head2 _get_application()
+=head2 get_application()
 
 Returns the parent IPC::Concurrency::DBI::Application object.
 
-	my $application = $instance->_get_application();
+	my $application = $instance->get_application();
 
 =cut
 
-sub _get_application
+sub get_application
 {
 	my ( $self ) = @_;
 	
