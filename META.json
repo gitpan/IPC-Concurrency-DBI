@@ -24,6 +24,7 @@
             "DBD::SQLite" : "0",
             "DBI" : "0",
             "Test::Exception" : "0",
+            "Test::FailWarnings" : "0",
             "Test::More" : "0"
          }
       },
@@ -44,21 +45,21 @@
    "provides" : {
       "IPC::Concurrency::DBI" : {
          "file" : "lib/IPC/Concurrency/DBI.pm",
-         "version" : "v1.1.1"
+         "version" : "v1.1.2"
       },
       "IPC::Concurrency::DBI::Application" : {
          "file" : "lib/IPC/Concurrency/DBI/Application.pm",
-         "version" : "v1.1.1"
+         "version" : "v1.1.2"
       },
       "IPC::Concurrency::DBI::Application::Instance" : {
          "file" : "lib/IPC/Concurrency/DBI/Application/Instance.pm",
-         "version" : "v1.1.1"
+         "version" : "v1.1.2"
       }
    },
    "release_status" : "stable",
    "resources" : {
       "bugtracker" : {
-         "web" : "http://rt.cpan.org/NoAuth/ReportBug.html?Queue=ipc-concurrency-dbi"
+         "web" : "https://github.com/guillaumeaubert/IPC-Concurrency-DBI/issues"
       },
       "homepage" : "https://metacpan.org/release/IPC-Concurrency-DBI",
       "license" : [
@@ -68,5 +69,5 @@
          "url" : "https://github.com/guillaumeaubert/IPC-Concurrency-DBI"
       }
    },
-   "version" : "v1.1.1"
+   "version" : "v1.1.2"
 }

@@ -17,11 +17,11 @@ IPC::Concurrency::DBI::Application - Application identifier that represents the 
 
 =head1 VERSION
 
-Version 1.1.1
+Version 1.1.2
 
 =cut
 
-our $VERSION = '1.1.1';
+our $VERSION = '1.1.2';
 
 
 =head1 SYNOPSIS
@@ -346,8 +346,8 @@ Guillaume Aubert, C<< <aubertg at cpan.org> >>.
 
 =head1 BUGS
 
-Please report any bugs or feature requests to C<bug-ipc-concurrency-dbi at rt.cpan.org>, or through
-the web interface at L<http://rt.cpan.org/NoAuth/ReportBug.html?Queue=IPC-Concurrency-DBI>. 
+Please report any bugs or feature requests through the web interface at
+L<https://github.com/guillaumeaubert/IPC-Concurrency-DBI/issues/new>.
 I will be notified, and then you'll automatically be notified of progress on
 your bug as I make changes.
 
@@ -363,9 +363,9 @@ You can also look for information at:
 
 =over 4
 
-=item * RT: CPAN's request tracker
+=item * GitHub's request tracker
 
-L<http://rt.cpan.org/NoAuth/Bugs.html?Dist=IPC-Concurrency-DBI>
+L<https://github.com/guillaumeaubert/IPC-Concurrency-DBI/issues>
 
 =item * AnnoCPAN: Annotated CPAN documentation
 
@@ -375,9 +375,9 @@ L<http://annocpan.org/dist/IPC-Concurrency-DBI>
 
 L<http://cpanratings.perl.org/d/IPC-Concurrency-DBI>
 
-=item * Search CPAN
+=item * MetaCPAN
 
-L<http://search.cpan.org/dist/IPC-Concurrency-DBI/>
+L<https://metacpan.org/release/IPC-Concurrency-DBI>
 
 =back
 
@@ -394,7 +394,7 @@ this module and brainstorming with me about the features it should offer.
 
 =head1 COPYRIGHT & LICENSE
 
-Copyright 2011-2012 Guillaume Aubert.
+Copyright 2011-2013 Guillaume Aubert.
 
 This program is free software: you can redistribute it and/or modify it under
 the terms of the GNU General Public License version 3 as published by the Free

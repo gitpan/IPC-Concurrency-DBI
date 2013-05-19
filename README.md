@@ -1,9 +1,14 @@
 IPC-Concurrency-DBI
+===================
+
+[![Build Status](https://travis-ci.org/guillaumeaubert/IPC-Concurrency-DBI.png?branch=master)](https://travis-ci.org/guillaumeaubert/IPC-Concurrency-DBI)
 
 IPC::Concurrency::DBI controls how many instances of a given application are
 allowed to run in parallel, using DBI as the IPC method.
 
+
 INSTALLATION
+------------
 
 To install this module, run the following commands:
 
@@ -12,31 +17,35 @@ To install this module, run the following commands:
 	./Build test
 	./Build install
 
+
 SUPPORT AND DOCUMENTATION
+-------------------------
 
 After installing, you can find documentation for this module with the
 perldoc command.
 
-    perldoc IPC::Concurrency::DBI
+	perldoc IPC::Concurrency::DBI
+
 
 You can also look for information at:
 
-    RT, CPAN's request tracker (report bugs here)
-        http://rt.cpan.org/NoAuth/Bugs.html?Dist=IPC-Concurrency-DBI
+ * [GitHub's request tracker (report bugs here)]
+   (https://github.com/guillaumeaubert/IPC-Concurrency-DBI/issues)
 
-    AnnoCPAN, Annotated CPAN documentation
-        http://annocpan.org/dist/IPC-Concurrency-DBI
+ * [AnnoCPAN, Annotated CPAN documentation]
+   (http://annocpan.org/dist/IPC-Concurrency-DBI)
 
-    CPAN Ratings
-        http://cpanratings.perl.org/d/IPC-Concurrency-DBI
+ * [CPAN Ratings]
+   (http://cpanratings.perl.org/d/IPC-Concurrency-DBI)
 
-    Search CPAN
-        http://search.cpan.org/dist/IPC-Concurrency-DBI/
+ * [MetaCPAN]
+   (https://metacpan.org/release/IPC-Concurrency-DBI)
 
 
 LICENSE AND COPYRIGHT
+---------------------
 
-Copyright (C) 2011-2012 Guillaume Aubert
+Copyright (C) 2011-2013 Guillaume Aubert
 
 This program is free software: you can redistribute it and/or modify it under
 the terms of the GNU General Public License version 3 as published by the Free
