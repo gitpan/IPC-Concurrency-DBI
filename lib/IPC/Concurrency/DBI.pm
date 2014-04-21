@@ -17,11 +17,11 @@ IPC::Concurrency::DBI - Control how many instances of an application run in para
 
 =head1 VERSION
 
-Version 1.1.2
+Version 1.1.3
 
 =cut
 
-our $VERSION = '1.1.2';
+our $VERSION = '1.1.3';
 
 
 =head1 SYNOPSIS
@@ -43,29 +43,29 @@ you database access but not file write rights in production environments.
 		'database_handle' => $dbh,
 		'verbose'         => 1,
 	);
-	
+
 	# Create the tables that the concurrency manager needs to store information
 	# about the applications and instances.
 	$concurrency_manager->create_tables();
-	
+
 	# Register cron_script.pl as an application we want to limit to 10 parallel
 	# instances. We only need to do this once, obviously.
 	$concurrency_manager->register_application(
 		name              => 'cron_script.pl',
 		maximum_instances => 10,
 	);
-	
+
 	# Retrieve the application.
 	my $application = $concurrency_manager->get_application(
 		name => 'cron_script.pl',
 	);
-	
+
 	# Count how many instances are currently running.
 	my $instances_count = $application->get_instances_count();
-	
+
 	# NOT IMPLEMENTED YET: Get a list of what instances are currently running.
 	# my $instances = $application->get_instances_list()
-	
+
 	# Start a new instance of the application. If this returns undef, we've
 	# reached the limit.
 	unless ( my $instance = $application->start_instance() )
@@ -73,9 +73,9 @@ you database access but not file write rights in production environments.
 		print "Too many instances of $0 are already running.\n";
 		exit;
 	}
-	
+
 	# [...] Do some work.
-	
+
 	# Now that the application is about to exit, flag the instance as completed.
 	# (note: this is implicit when $instance is destroyed).
 	$instance->finish();
@@ -131,13 +131,13 @@ sub new
 	my ( $class, %args ) = @_;
 	my $database_handle = delete( $args{'database_handle'} );
 	my $verbose = delete( $args{'verbose'} );
-	
+
 	# Check parameters.
 	croak "Argument 'database_handle' is required to create a new IPC::Concurrency::DBI object"
 		unless defined( $database_handle );
 	croak "Argument 'database_handle' is not a DBI object"
 		if !Data::Validate::Type::is_instance( $database_handle, class => 'DBI::db' );
-	
+
 	# Create the object.
 	my $self = bless(
 		{
@@ -146,10 +146,10 @@ sub new
 		},
 		$class,
 	);
-	
+
 	$self->set_verbose( $verbose )
 		if defined( $verbose );
-	
+
 	return $self;
 }
 
@@ -177,7 +177,7 @@ sub register_application
 	my ( $self, %args ) = @_;
 	my $name = delete( $args{'name'} );
 	my $maximum_instances = delete( $args{'maximum_instances'} );
-	
+
 	# Check parameters.
 	croak 'The name of the application must be defined'
 		if !defined( $name ) || ( $name eq '' );
@@ -187,7 +187,7 @@ sub register_application
 		if !defined( $maximum_instances ) || ( $maximum_instances eq '' );
 	croak 'The maximum number of instances must be a strictly positive integer'
 		if !Data::Validate::Type::is_number( $maximum_instances, strictly_positive => 1 );
-	
+
 	# Insert the new application.
 	my $database_handle = $self->get_database_handle();
 	my $time = time();
@@ -204,7 +204,7 @@ sub register_application
 	);
 	croak 'Cannot execute SQL: ' . $database_handle->errstr()
 		if defined( $database_handle->errstr() );
-	
+
 	return defined( $rows_affected ) && $rows_affected == 1 ? 1 : 0;
 }
 
@@ -219,7 +219,7 @@ Retrieve an application by name or by application ID.
 	);
 	die 'Application not found'
 		unless defined( $application );
-	
+
 	# Retrieve the application by ID.
 	my $application = $concurrency_manager->get_application(
 		id => 12345,
@@ -235,7 +235,7 @@ sub get_application
 	my $name = delete( $args{'name'} );
 	my $application_id = delete( $args{'id'} );
 	my $database_handle = $self->get_database_handle();
-	
+
 	return IPC::Concurrency::DBI::Application->new(
 		name            => $name,
 		id              => $application_id,
@@ -263,16 +263,16 @@ sub create_tables
 	my ( $self, %args ) = @_;
 	my $drop_if_exist = delete( $args{'drop_if_exist'} );
 	my $database_handle = $self->get_database_handle();
-	
+
 	# Defaults.
 	$drop_if_exist = 0
 		if !defined( $drop_if_exist ) || !$drop_if_exist;
-	
+
 	# Check the database type.
 	my $database_type = $self->get_database_type();
 	croak "This database type ($database_type) is not supported yet, please email the maintainer of the module for help"
 		if $database_type !~ m/^(?:SQLite|mysql|Pg)$/x;
-	
+
 	# Table definitions.
 	my $tables_sql =
 	{
@@ -321,7 +321,7 @@ sub create_tables
 	};
 	croak "No table definition found for database type '$database_type'"
 		if !defined( $tables_sql->{ $database_type } );
-	
+
 	# Create the table that will hold the list of applications as well as
 	# a summary of the information about instances.
 	if ( $drop_if_exist )
@@ -332,10 +332,10 @@ sub create_tables
 	$database_handle->do(
 		$tables_sql->{ $database_type }
 	) || croak 'Cannot execute SQL: ' . $database_handle->errstr();
-	
+
 	# TODO: create a separate table to hold information about what instances
 	# are currently running.
-	
+
 	return 1;
 }
 
@@ -353,7 +353,7 @@ Returns the database handle used for this object.
 sub get_database_handle
 {
 	my ( $self ) = @_;
-	
+
 	return $self->{'database_handle'};
 }
 
@@ -370,9 +370,9 @@ with the L<IPC::Concurrency::DBI> object.
 sub get_database_type
 {
 	my ( $self ) = @_;
-	
+
 	my $database_handle = $self->get_database_handle();
-	
+
 	return $database_handle->{'Driver'}->{'Name'} || '';
 }
 
@@ -385,7 +385,7 @@ what type of debugging statements / information should be warned out.
 See C<set_verbose()> for the possible values this function can return.
 
 	warn 'Verbose' if $queue->get_verbose();
-	
+
 	warn 'Very verbose' if $queue->get_verbose() > 1;
 
 =cut
@@ -393,7 +393,7 @@ See C<set_verbose()> for the possible values this function can return.
 sub get_verbose
 {
 	my ( $self ) = @_;
-	
+
 	return $self->{'verbose'};
 }
 
@@ -413,9 +413,9 @@ Control the verbosity of the warnings in the code:
 =back
 
 	$queue->set_verbose(1); # turn on verbose information
-	
+
 	$queue->set_verbose(2); # be extra verbose
-	
+
 	$queue->set_verbose(0); # quiet now!
 
 =cut
@@ -423,9 +423,9 @@ Control the verbosity of the warnings in the code:
 sub set_verbose
 {
 	my ( $self, $verbose ) = @_;
-	
+
 	$self->{'verbose'} = ( $verbose || 0 );
-	
+
 	return;
 }
 
@@ -442,11 +442,6 @@ sub verbose
 {
 	croak 'verbose() has been deprecated, please use get_verbose() / set_verbose() instead.';
 }
-
-
-=head1 AUTHOR
-
-Guillaume Aubert, C<< <aubertg at cpan.org> >>.
 
 
 =head1 BUGS
@@ -487,11 +482,16 @@ L<https://metacpan.org/release/IPC-Concurrency-DBI>
 =back
 
 
+=head1 AUTHOR
+
+L<Guillaume Aubert|https://metacpan.org/author/AUBERTG>,
+C<< <aubertg at cpan.org> >>.
+
+
 =head1 ACKNOWLEDGEMENTS
 
-Thanks to ThinkGeek (L<http://www.thinkgeek.com/>) and its corporate overlords
-at Geeknet (L<http://www.geek.net/>), for footing the bill while I eat pizza
-and write code for them!
+I originally developed this project for ThinkGeek
+(L<http://www.thinkgeek.com/>). Thanks for allowing me to open-source it!
 
 Thanks to Jacob Rose C<< <jacob at thinkgeek.com> >> for suggesting the idea of
 this module and brainstorming with me about the features it should offer.
@@ -499,7 +499,7 @@ this module and brainstorming with me about the features it should offer.
 
 =head1 COPYRIGHT & LICENSE
 
-Copyright 2011-2013 Guillaume Aubert.
+Copyright 2011-2014 Guillaume Aubert.
 
 This program is free software: you can redistribute it and/or modify it under
 the terms of the GNU General Public License version 3 as published by the Free
